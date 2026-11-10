@@ -1,18 +1,18 @@
-import discord                                                                      #Import discord
-from discord.ext import commands                                                    #Import commands
+from discord.ext import commands                                                    #Import discord commands
 import requests                                                                     #Import API resquest
+from apikeys import POKEAPI_URL
 
 class Poke(commands.Cog):                                                           #Class Poke is a command Cog
 
     def __init__(self, bot):                                                        #Introduces bot on init
         self.bot = bot                                                              #bot is bot from commands
 
-    #Pokemon pic command
+    #Pokemon pictures command
     @commands.command()                                                             #It's a command
     async def poke(self, ctx, arg):                                                 #Defines !poke
         try:                                                                        #Tries...
             pokemon = arg.lower()                                                   #Sets the argument into lowercase
-            result = requests.get(f"https://pokeapi.co/api/v2/pokemon/{pokemon}")   #Calls the API
+            result = requests.get(f"{POKEAPI_URL}{pokemon}")                        #Calls the API
             
             if result.status_code == 200:                                           #If the page status code is 200...
                 image_url = result.json()["sprites"]["front_default"]               #Gets the image of the pokemon
@@ -25,7 +25,7 @@ class Poke(commands.Cog):                                                       
                 await ctx.send("Error al buscar el Pokémon, inténtalo más tarde")   #Error because the API is down
 
         except Exception as e:                                                      #When it has tried and nothing happens...
-            print(f"Error:  {e}")                                                   #Prints the error in the logs
+            print(f"Error: {e}")                                                    #Prints the error in the logs
             await ctx.send("Ha ocurrido un problema interno")                       #Sends message that there's a problem
 
     @poke.error                                                                     #When there's an error when typing the command...
