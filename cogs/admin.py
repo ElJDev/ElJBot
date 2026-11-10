@@ -2,6 +2,7 @@ import discord                                                                  
 from discord.ext import commands                                                    #Import commands
 from discord.ext.commands import has_permissions, MissingPermissions                #Imports permission conditions
 from discord import Member                                                          #Imports the members
+from custom_lists import banneable_words                                                 #Imports the list of forbidden words
 
 bot = commands.Bot
 
@@ -12,6 +13,7 @@ class Admin(commands.Cog):                                                      
 
     #Clean-up
     @commands.command()
+    @has_permissions(manage_messages=True)                                          #If you have the permission to manage messages it will let you use this command
     async def limpiar(self, ctx):                                                   #!limpiar
         await ctx.channel.purge()                                                   #Deletes channel messages
         await ctx.send("Mensajes eliminados", delete_after=3)                       #Notifies it and deletes it's own message after 3 sec
@@ -21,11 +23,12 @@ class Admin(commands.Cog):                                                      
     async def on_message(message):                                                  #When a message is received...
         if message.author == bot.user:                                              #If the bot wrote a forbidden word, nothing happens
             return
-    
-        if "gilipollas" in message.content.lower():                                 #If a message contains this words...
-            await message.delete()                                                  #It will be deleted
-            await message.channel.send("No digas eso")                              #And will be warned
-            print(f"Message received: '{message.content}' from {message.author}")   #Notifies to me in the logs
+
+        for word in banneable_words:
+            if word in message.content.lower():                                     #If a message contains this words...
+                await message.delete()                                                  #It will be deleted
+                await message.channel.send("No digas eso")                              #And will be warned
+                print(f"Message received: '{message.content}' from {message.author}")   #Notifies to me in the logs
         
         await bot.process_commands(message)                                         #Processes other events and command
 
@@ -48,20 +51,20 @@ class Admin(commands.Cog):                                                      
     async def twitch(ctx):                                                  #!twitch
         embed = discord.Embed(title="Estoy en directo en Twitch", url="https://twitch.tv/elj28gamer", description="Vamos a jugar a Balatro, Chess y Geometry Dash", color=0x71368a) #Title, Desciption, Color and URL
         embed.set_author(name="ElJ28Gamer", url="https://twitch.tv/elj28gamer", icon_url="https://static-cdn.jtvnw.net/jtv_user_pictures/b4b7f031-9672-4d7e-a171-0372c4fca318-profile_image-70x70.png") #Nombre puede ser ctx.author.display_name y el icono es ctx.author.avatar_url
-        embed.add_field(name="Hora española", value="18:00", inline=True)   #Section 1
+        embed.add_field(name="Hora española", value="", inline=True)   #Section 1
         embed.set_footer(text="Hasta la próxima!")                          #Foot note
         await ctx.send(embed=embed)                                         #Message sent
 
     #Error
     @commands.Cog.listener()
-    async def on_command_error(ctx, error):                             #When there is an error in a command...
+    async def on_command_error(ctx, error):                                    #When there is an error in a command...
         if isinstance(error, commands.errors.MissingPermissions):              #And the error is from not having permissions...
-            await ctx.send("No tienes permisos para usar este comando") #You will be notified about it
+            await ctx.send("No tienes permisos para usar este comando")        #You will be notified about it
 
     #DM
     @commands.command()
     async def message(ctx, user:discord.Member, *, message=None):   #!message @user
-        message = "Bienvenido al servidor"
+        message = "Bienvenido al servidor"                          #Message
         embed = discord.Embed(title=message)                        #Prepare the embed to be the message
         await user.send(embed=embed)                                #Send the user the embed
 
